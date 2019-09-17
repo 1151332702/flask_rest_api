@@ -9,6 +9,9 @@ from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy as _SQLAlchemy, BaseQuery
 from sqlalchemy import Column, Integer, SmallInteger
 
+from app.libs.error_code import NotFound
+
+
 class SQLAlchemy(_SQLAlchemy):
     @contextmanager
     def auto_commit(self):
@@ -26,6 +29,22 @@ class Query(BaseQuery):
             kwargs['status'] = 1
         return super(Query, self).filter_by(**kwargs)
 
+    def get_or_404(self, ident):
+        """Like :meth:`get` but aborts with 404 if not found instead of returning ``None``."""
+
+        rv = self.get(ident)
+        if rv is None:
+            raise NotFound()
+        return rv
+
+    def first_or_404(self):
+        """Like :meth:`first` but aborts with 404 if not found instead of returning ``None``."""
+
+        rv = self.first()
+        if rv is None:
+            raise NotFound()
+        return rv
+
 
 db = SQLAlchemy(query_class=Query)
 
@@ -36,6 +55,9 @@ class Base(db.Model):
 
     def __init__(self):
         self.create_time = int(datetime.now().timestamp())
+
+    def __getitem__(self, item):
+        return getattr(self, item)
 
     def set_attrs(self, attr_obj):
         for k, v in attr_obj.items():

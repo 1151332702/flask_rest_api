@@ -5,6 +5,7 @@
 # @Description:
 from flask import request
 
+from app.libs.error_code import ClientTypeError, Success
 from app.libs.redprint import Redprint
 from app.libs.ClientTypeEnum import ClientTypeEnum
 from app.models.user import User
@@ -19,18 +20,15 @@ def create_client():
     # WTForms
     # 接受参数 表单 一般是=网页端  json 一般是移动端
     # 获取参数
-    data = request.json
-    form = ClientForm(data=data)
-    if form.validate(): # 校验通过
-        # 对于不同的注册方式采用不同的方法：
-        promise = {
-            ClientTypeEnum.USER_EMAIL: _register_user_by_email
-        }
-        promise[form.type.data]()
+    form = ClientForm().validate_for_api()
+    # 对于不同的注册方式采用不同的方法：
+    promise = {
+        ClientTypeEnum.USER_EMAIL: _register_user_by_email
+    }
+    promise[form.type.data]()
 
-    return 'success'
+    return Success()
 
 def _register_user_by_email():
-    form = UserEmailForm(data=request.json)
-    if form.validate():
-        User.register_by_email(form.nickname.data, form.account.data, form.secret.data)
+    form = UserEmailForm().validate_for_api()
+    User.register_by_email(form.nickname.data, form.account.data, form.secret.data)

@@ -3,12 +3,13 @@
 # @Author  : lilong
 # @File    : forms.py
 # @Description:
-from wtforms import Form, StringField, IntegerField
+from wtforms import StringField, IntegerField
 from wtforms.validators import DataRequired, length, Email, Regexp
 from wtforms import ValidationError
 
 from app.libs.ClientTypeEnum import ClientTypeEnum
 from app.models.user import User
+from app.validators.base import BaseForm as Form
 
 
 class ClientForm(Form):
