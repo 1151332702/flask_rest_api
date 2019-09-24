@@ -16,9 +16,14 @@ class ParameterException(APIException):
     error_code = 1000
 
 class Success(APIException):
-    code = 200
+    code = 201 # 新增成功
     msg = 'ok'
     error_code = 0
+
+class DeleteSuccess(Success):
+    # code = 204 # 删除成功  但是这个状态码在前端会不显示东西
+    code = 202 # 使用其他的code
+    error_code = -1 #前端可以使用err_code来进行判断
 
 class ServerError(APIException):
     code = 500

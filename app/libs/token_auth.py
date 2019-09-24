@@ -11,7 +11,7 @@ from tensorboard.backend.event_processing.event_accumulator import namedtuple
 from app.libs.error_code import AuthFailed
 
 auth = HTTPBasicAuth()
-User = namedtuple('User', ['uid', 'ac_type', 'scope'])
+User = namedtuple('User', ['uid', 'ac_type', 'is_admin'])
 
 @auth.verify_password
 def verify_password(account, paaword):
@@ -33,4 +33,4 @@ def verify_auth_token(token):
         raise AuthFailed(msg='token is invalid.', error_code=1002)
     except SignatureExpired:
         raise AuthFailed(msg='token is expired.', error_code=1003)
-    return User(data['uid'], data['type'], '')
+    return User(data['uid'], data['type'], data['is_admin'])
