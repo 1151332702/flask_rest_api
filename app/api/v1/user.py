@@ -21,9 +21,6 @@ api = Redprint('user')
 def super_get_user(uid):
     # 对于需要用户身份标识的接口 比如获取用户信息
     # token 是否合法  是否过期
-    is_admin = g.user.is_admin
-    if not is_admin:
-        raise AuthFailed()
     user = User.query.filter_by(id=uid).first_or_404()
     return jsonify(user)
 
@@ -38,6 +35,7 @@ def get_user():
     return jsonify(user)
 
 
+# 普通用户
 @api.route('', methods=['DELETE'])
 @auth.login_required
 def delete_user():

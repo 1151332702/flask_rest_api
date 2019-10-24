@@ -16,8 +16,12 @@ class User(Base):
     auth = Column(SmallInteger, default=1)
     _password = Column('password', String(100))
 
-    def keys(self):
-        return ['id', 'email', 'nickname', 'auth']
+    @orm.reconstructor
+    def __init__(self): # 通过sqlalchemy常用语法构建的User对象不会执行init方法，但是打上orm.reconstructor就可以执行了。
+                        # 这样就可以为对象赋予实例变量值， 类变量改变了之后，所有该类的对象，类变量都改变了
+        self.fieles = ['id', 'email', 'nickname', 'auth']
+
+
 
     @property
     def password(self):
@@ -43,8 +47,8 @@ class User(Base):
             raise NotFound(msg='user not found..')
         if not user.check_password(password):
             raise AuthFailed()
-        is_admin = True if user.auth == 2 else False
-        return {'uid': user.id, 'is_admin': is_admin}
+        scope = 'AdminScope' if user.auth == 2 else 'UserScope'
+        return {'uid': user.id, 'scope': scope}
 
 
     def check_password(self, raw):

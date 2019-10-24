@@ -3,16 +3,31 @@
 # @Author  : lilong
 # @File    : book.py
 # @Description:
-from flask import Blueprint
-from app.libs.redprint import Redprint
+from flask import jsonify
+from sqlalchemy import or_
 
-# book = Blueprint('book', __name__)
+from app.libs.redprint import Redprint
+from app.models.book import Book
+
+from app.validators.forms import BookSearchForm
+
 api = Redprint('book')
 
-@api.route('/get')
-def get_book():
-    return 'i am book'
+@api.route('/search')
+def search_book():
+    form = BookSearchForm().validate_for_api()
+    q = '%' + form.q.data + '%'
+    books = Book.query.filter(
+        or_(
+            Book.title.like(q),
+            Book.publisher.like(q)
+        )
+    ).all()
+    # 灵活的隐藏某些字段
+    books = [book.hide('summary') for book in books]
+    return jsonify(books)
 
-@api.route('/create')
-def create_book():
-    return 'create book'
+@api.route('/<string:isbn>/detail')
+def book_detail(isbn):
+    book = Book.query.filter_by(isbn=isbn).first_or_404()
+    return jsonify(book)

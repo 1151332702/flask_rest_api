@@ -39,3 +39,8 @@ class AuthFailed(APIException):
     code = 401 # 授权失败
     msg = 'authorization failed..'
     error_code = 1005
+
+class Forbidden(APIException):
+    code = 403 # 授权失败
+    msg = 'forbidden, not in scope..'
+    error_code = 1004

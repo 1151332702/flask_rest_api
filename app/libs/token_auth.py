@@ -3,15 +3,16 @@
 # @Author  : lilong
 # @File    : token_auth.py
 # @Description:
-from flask import current_app, g
+from flask import current_app, g, request
 from flask_httpauth import HTTPBasicAuth
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired
-from tensorboard.backend.event_processing.event_accumulator import namedtuple
+from collections import namedtuple
 
-from app.libs.error_code import AuthFailed
+from app.libs.error_code import AuthFailed, Forbidden
+from app.libs.scope import is_in_scope
 
 auth = HTTPBasicAuth()
-User = namedtuple('User', ['uid', 'ac_type', 'is_admin'])
+User = namedtuple('User', ['uid', 'ac_type', 'scope'])
 
 @auth.verify_password
 def verify_password(account, paaword):
@@ -33,4 +34,7 @@ def verify_auth_token(token):
         raise AuthFailed(msg='token is invalid.', error_code=1002)
     except SignatureExpired:
         raise AuthFailed(msg='token is expired.', error_code=1003)
-    return User(data['uid'], data['type'], data['is_admin'])
+    allow = is_in_scope(data['scope'], request.endpoint)
+    if not allow:
+        raise Forbidden()
+    return User(data['uid'], data['type'], data['scope'])
